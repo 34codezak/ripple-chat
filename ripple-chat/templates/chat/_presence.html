@@ -1,0 +1,4 @@
+<div id="presence" class="presence" data-active="{{ active|yesno:'1,0' }}"
+     hx-get="{% url 'chat:presence' room.slug %}" hx-trigger="every 15s" hx-swap="outerHTML">
+  <span class="dot"></span>{{ label }}
+</div>

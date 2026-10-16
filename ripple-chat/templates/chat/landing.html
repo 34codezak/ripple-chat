@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<section class="landing" x-data="carousel({{ slides|length }})" x-on:mouseenter="pause()" x-on:mouseleave="play()">
+  <div class="carousel">
+    <button class="nav prev" x-on:click="prev()" aria-label="Previous"><svg class="i"><use href="#i-left"/></svg></button>
+    {% for s in slides %}
+      <figure x-show="i === {{ forloop.counter0 }}" {% if not forloop.first %}x-cloak{% endif %} x-transition.opacity>
+        <img src="{% static s.img %}" alt="">
+        <figcaption>{{ s.caption }}</figcaption>
+      </figure>
+    {% endfor %}
+    <button class="nav next" x-on:click="next()" aria-label="Next"><svg class="i"><use href="#i-right"/></svg></button>
+    <div class="dots">
+      {% for s in slides %}<button x-bind:class="{ on: i === {{ forloop.counter0 }} }" x-on:click="go({{ forloop.counter0 }})" aria-label="Slide {{ forloop.counter }}"></button>{% endfor %}
+    </div>
+  </div>
+
+  <div class="cta">
+    {% if user.is_authenticated %}
+      <h2>Welcome back, {{ user.username }}</h2>
+      <a class="btn" href="{% url 'chat:home' %}">Open your chats</a>
+    {% else %}
+      <h2>Log back in <span>or</span> Join others on Ripple</h2>
+      <div class="cta-buttons">
+        <a class="btn ghost" href="{% url 'login' %}">Log in</a>
+        <a class="btn" href="{% url 'signup' %}">Join Ripple</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+
+<script>
+  function carousel(count) {
+    return {
+      i: 0, count, timer: null,
+      init() { this.play(); },
+      play() { this.pause(); this.timer = setInterval(() => this.next(), 5000); },
+      pause() { clearInterval(this.timer); },
+      next() { this.i = (this.i + 1) % this.count; },
+      prev() { this.i = (this.i - 1 + this.count) % this.count; },
+      go(n) { this.i = n; },
+    };
+  }
+</script>
+{% endblock %}

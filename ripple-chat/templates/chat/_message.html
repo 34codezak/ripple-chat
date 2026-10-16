@@ -1,0 +1,5 @@
+<div class="msg" data-username="{{ message.user.username }}">
+  <div class="author">{{ message.user.username }}</div>
+  <div class="body">{{ message.content|linebreaksbr }}</div>
+  <time>{{ message.timestamp|date:"H:i" }}</time>
+</div>

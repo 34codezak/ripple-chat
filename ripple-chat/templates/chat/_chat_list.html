@@ -1,0 +1,18 @@
+{% for row in rows %}
+  <a class="row" href="{% url 'chat:room' row.room.slug %}">
+    {% include "chat/_avatar.html" with label=row.title img=row.avatar_url %}
+    <div class="row-main">
+      <div class="row-title">{{ row.title }}</div>
+      <div class="row-sub">{% if row.last_text %}{% if row.room.kind == "group" %}{{ row.last_sender }}: {% endif %}{{ row.last_text|truncatechars:42 }}{% else %}<em>No messages yet</em>{% endif %}</div>
+    </div>
+    <div class="row-side">
+      <time>{{ row.time_label }}</time>
+      {% if row.unread %}<span class="badge unread">{% if row.unread > 99 %}99+{% else %}{{ row.unread }}{% endif %}</span>{% endif %}
+    </div>
+  </a>
+{% empty %}
+  <div class="empty">
+    <p>Nothing here yet.</p>
+    <p><a href="{% url 'chat:add_contact' %}">Add a contact</a>, then <a href="{% url 'chat:new_chat' %}">start a chat</a> or <a href="{% url 'chat:new_group' %}">create a group</a>.</p>
+  </div>
+{% endfor %}

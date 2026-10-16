@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · Ripple-Chat{% endblock %}
+{% block topbar %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block content %}
+<section class="chat" id="chat" data-room="{{ room.slug }}" data-user="{{ request.user.username }}" data-kind="{{ room.kind }}">
+  <header class="chat-header">
+    <a class="icon-btn" href="{% url 'chat:home' %}" aria-label="Back to chats"><svg class="i"><use href="#i-back"/></svg></a>
+    {% include "chat/_avatar.html" with label=title img=avatar_url size="sm" %}
+    <div class="who"><h1>{{ title }}</h1><p>{{ subtitle }}</p></div>
+    {% include "chat/_presence.html" %}
+  </header>
+  <div id="ws-status" class="ws-banner" data-state="connecting">Connecting…</div>
+
+  <!-- HTMX loads history once; the WebSocket appends everything after. -->
+  <div id="messages" class="messages"
+       hx-get="{% url 'chat:history' room.slug %}" hx-trigger="load" hx-swap="innerHTML"></div>
+
+  <!-- HTMX posts to a normal Django view (204, no swap). Alpine handles tiny composer state. -->
+  <form class="composer"
+        hx-post="{% url 'chat:post_message' room.slug %}" hx-swap="none"
+        x-data="{ text: '' }"
+        x-on:htmx:after-request="if ($event.detail.successful) { text = ''; $refs.input.focus() }">
+    <textarea name="content" rows="1" maxlength="2000" placeholder="Type a message…" autocomplete="off"
+              x-ref="input" x-model="text"
+              x-on:keydown.enter.exact.prevent="text.trim() && $el.form.requestSubmit()"></textarea>
+    <button type="submit" class="send" x-bind:disabled="!text.trim()" aria-label="Send"><svg class="i"><use href="#i-send"/></svg></button>
+  </form>
+</section>
+
+<script>
+(() => {
+  const chat = document.getElementById("chat");
+  const list = document.getElementById("messages");
+  const statusEl = document.getElementById("ws-status");
+  const me = chat.dataset.user;
+  const scheme = location.protocol === "https:" ? "wss" : "ws";
+  const url = `${scheme}://${location.host}/ws/chat/${chat.dataset.room}/`;
+  let socket, retries = 0;
+
+  const setStatus = (state, label) => { statusEl.dataset.state = state; statusEl.textContent = label; };
+  const scrollDown = () => { list.scrollTop = list.scrollHeight; };
+  const markMine = (root) =>
+    root.querySelectorAll(".msg").forEach(el => el.classList.toggle("mine", el.dataset.username === me));
+
+  list.addEventListener("htmx:afterSwap", () => { markMine(list); scrollDown(); });
+
+  function connect() {
+    setStatus("connecting", "Connecting…");
+    socket = new WebSocket(url);
+    socket.onopen = () => { retries = 0; setStatus("online", ""); };
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (!data.html) return;
+      const nearBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 120;
+      list.insertAdjacentHTML("beforeend", data.html);
+      markMine(list);
+      if (nearBottom || list.lastElementChild.dataset.username === me) scrollDown();
+    };
+    socket.onclose = (event) => {
+      if (event.code === 4401 || event.code === 4404) { setStatus("offline", "You can't access this chat."); return; }
+      setStatus("offline", "Reconnecting…");
+      setTimeout(connect, Math.min(1000 * 2 ** retries++, 15000));
+    };
+  }
+  connect();
+})();
+</script>
+{% endblock %}

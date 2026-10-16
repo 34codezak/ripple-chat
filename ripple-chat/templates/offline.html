@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Offline · Ripple-Chat{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>You're offline</h1>
+  <p>Ripple can't reach the network right now. Reconnect and try again.</p>
+  <button class="btn" onclick="location.reload()">Retry</button>
+</div>
+{% endblock %}

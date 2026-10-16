@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Add contact · Ripple-Chat{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Add contact</h1>
+  <form method="post" class="inline-form">
+    {% csrf_token %}
+    <input type="text" name="username" placeholder="Their Ripple username" required>
+    <button type="submit" class="btn">Add</button>
+  </form>
+  <h2>Your contacts</h2>
+  <ul class="plain">{% for c in contacts %}<li>{{ c.username }}</li>{% empty %}<li class="muted">None yet.</li>{% endfor %}</ul>
+</div>
+{% endblock %}

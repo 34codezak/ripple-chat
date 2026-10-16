@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load chat_extras %}
+{% block title %}Settings · Ripple-Chat{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Settings</h1>
+  <p>{% include "chat/_avatar.html" with label=user.username img=user|avatar_src %} <strong>{{ user.username }}</strong></p>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn">Save</button>
+  </form>
+</div>
+{% endblock %}

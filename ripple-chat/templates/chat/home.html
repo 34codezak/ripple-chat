@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load chat_extras %}
+{% block content %}
+<section class="listpage" x-data="{ tab: 'all', search: false }">
+  <div class="tabs">
+    <a class="me" href="{% url 'chat:settings' %}" aria-label="Your profile">
+      {% include "chat/_avatar.html" with label=user.username img=user|avatar_src size="sm" %}
+    </a>
+    <button type="button" x-bind:class="{ on: tab === 'all' }" aria-label="Chats"
+            x-on:click="tab = 'all'; $nextTick(() => $refs.controls.dispatchEvent(new Event('refresh')))">
+      <svg class="i"><use href="#i-chat"/></svg></button>
+    <button type="button" x-bind:class="{ on: tab === 'groups' }" aria-label="Groups"
+            x-on:click="tab = 'groups'; $nextTick(() => $refs.controls.dispatchEvent(new Event('refresh')))">
+      <svg class="i"><use href="#i-users"/></svg></button>
+    <button type="button" x-bind:class="{ on: search }" aria-label="Search"
+            x-on:click="search = !search; if (search) $nextTick(() => $refs.q.focus())">
+      <svg class="i"><use href="#i-search"/></svg></button>
+  </div>
+
+  <form id="list-controls" x-ref="controls" x-on:submit.prevent>
+    <input type="hidden" name="tab" x-bind:value="tab">
+    <input type="search" name="q" id="q" placeholder="Search chats…" x-ref="q" x-show="search" x-cloak autocomplete="off">
+  </form>
+
+  <div id="chat-list" class="chat-list"
+       hx-get="{% url 'chat:list' %}"
+       hx-trigger="every 10s, refresh from:#list-controls, input from:#q delay:250ms"
+       hx-include="#list-controls" hx-swap="innerHTML">
+    {% include "chat/_chat_list.html" %}
+  </div>
+</section>
+{% endblock %}

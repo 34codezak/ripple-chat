@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load chat_extras %}
+{% block title %}Start chat · Ripple-Chat{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Start chat</h1>
+  {% for c in contacts %}
+    <form method="post" class="pick">
+      {% csrf_token %}<input type="hidden" name="user_id" value="{{ c.pk }}">
+      <button type="submit">{% include "chat/_avatar.html" with label=c.username img=c|avatar_src size="sm" %} <span>{{ c.username }}</span></button>
+    </form>
+  {% empty %}
+    <p class="muted">You have no contacts yet. <a href="{% url 'chat:add_contact' %}">Add one</a> first.</p>
+  {% endfor %}
+</div>
+{% endblock %}

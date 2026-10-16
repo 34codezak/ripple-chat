@@ -1,0 +1,2 @@
+{% with n=unread_total %}<span id="bell-count" class="badge{% if not n %} hide{% endif %}"
+      hx-get="{% url 'chat:bell' %}" hx-trigger="every 15s" hx-swap="outerHTML">{% if n > 99 %}99+{% else %}{{ n|default:0 }}{% endif %}</span>{% endwith %}

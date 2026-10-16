@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Create group · Ripple-Chat{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>Create group</h1>
+  <form method="post">
+    {% csrf_token %}
+    <label>Group name <input type="text" name="name" maxlength="80" required></label>
+    <p class="muted">Members</p>
+    {% for c in contacts %}
+      <label class="check"><input type="checkbox" name="members" value="{{ c.pk }}"> {{ c.username }}</label>
+    {% empty %}
+      <p class="muted">No contacts yet. <a href="{% url 'chat:add_contact' %}">Add some</a> first.</p>
+    {% endfor %}
+    <button type="submit" class="btn" {% if not contacts %}disabled{% endif %}>Create group</button>
+  </form>
+</div>
+{% endblock %}
